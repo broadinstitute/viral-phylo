@@ -14,11 +14,12 @@ if [[ -n "$DOCKER_PASS" && -n "$DOCKER_USER" && -n "$DOCKER_REGISTRY" ]]; then
 	# tag and deploy
 	for TAG in `travis/list-docker-tags.sh`; do
 		echo "Pushing docker image to docker registry as $TAG"
-		docker tag local/viral-ngs:build $TAG
+		docker tag local/build-container:build $TAG
 		docker push $TAG
 	done
 
 else
 	echo "Skipping Docker image deploy unless DOCKER_REGISTRY, DOCKER_USER and DOCKER_PASS variables are set."
+	exit 1
 
 fi
