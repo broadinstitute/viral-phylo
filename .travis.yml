@@ -1,0 +1,70 @@
+dist: bionic
+os: linux
+
+git:
+  depth: 150
+
+env:
+  global:
+  - CACHE_DIR="$HOME/misc_cache"
+  - MINICONDA_DIR="$HOME/miniconda"
+  - GATK_PATH="$CACHE_DIR"
+  - PYTHONIOENCODING=UTF8
+  
+  - DOCKER_REGISTRY="quay.io"
+  - DOCKER_REPO_PROD="quay.io/broadinstitute/viral-phylo"
+  - DOCKER_REPO_DEV="quay.io/broadinstitute/viral-phylo"
+  
+  - BOTO_CONFIG=/dev/null # bogus value to override config on travis
+  - _JAVA_OPTIONS="-Xmx3g" # overrides jvm opts set elsewhere; see: https://stackoverflow.com/questions/28327620/difference-between-java-options-java-tool-options-and-java-opts
+
+cache:
+  directories:
+    - $HOME/misc_cache
+    - $HOME/miniconda
+  timeout: 1000
+
+stages:
+  - build
+  - test
+
+jobs:
+  fast_finish: true
+  include:
+
+    - language: generic
+      stage: build
+      env:
+        - TRAVIS_JOB=build_docker
+        # DOCKER_USER
+        - secure: "lozjH+JPXqLvEVSPBBdsTGe3mqAJIwNHnwfbEs8RTirapP5b7f+/fpqlVW+0HZgAMdBMXjjqE8QxgIAs/MtGoEr7G/xgBylebaFCDJGmAi4F/OtvfiQWu8shLsX3UiEtnzf3rRPJNFxwFUFgojSMWZjsGnPVAof+b19oq7U9h4YsCR01InyEEFAYHiF/j0JhULKkxmdeDRSRd38bK4HTTocXwEiri4G89hC0kgeis+zl0QUFYZxY+qjtH1/kM1HuSpeiedpHb4zEPpQsSC7EAVLcxjMEpsNwoNv5mAgOI32QwaIN15XNMRHreteIC/U9akLda5tyEdss04sTLEKEKe2yiEgXYxzrZ/73lO9Hv1LnWzAyh0jYreITtsRIHuNp4YwsckOelvPNkc+m/89roHjhiD3GSBHfQzoATtC7R0PR8c72w/pr+eLeQHq5ixRVZ/9BcQ5hjNNzLkfyWqQTz6fIeb6Z1JUugc4mSXV7r5DMx4ChRGsJvAxntDbQzwG6m0kFTWmLI/X8nsU5uo/2+KBf0pJBJVx2hH4KK1fKDad965N3lDcPGoo5/KDTwtIMpYFehUV3WZyVogiKbVSmS7RkhHWpu24ideFHpExVtrSSayni2NeSExRyeHpxTalIoLzDY1yygF8cCkTLHaAx9RhyEIQlpsOAS+J1Di7yu/o="
+        # DOCKER_PASS
+        - secure: "vj9mctCS9cjtDESFOhx3pg7EljftngKzxSKlXHXFkFLwN0MgF3WydAZpZoI/yMsbYOcecPhyQdLnmB6Dwd6OwKSJe2fYiPyCwyzsT80C5tMR8iDN+h5OaBeZu/RexNt8HNNSSggDAlQsO/FPrHeH/r8cFB4+tH9lCm6MxnpMIjTjSwgtJ2slpBay4qK27uTgEF+o2Ej/G3eikaeW5HaNzLQgymAhkglxJMUPgFwtgWfB8tl4HJ/ugPNENBKRI28OEeTyIDeXJW/cAuutcPJ1mDJU6tP7ut687btJiP+K9lx5p32jl+N8N22HR9ate/4NyW9djV5mDIzHk247al8KagA66GLpc+PX4M3j4Ejgap7ydUEt/wLR4KN5Hi0OlpFDKhTL15MJ1D/sObTsv1tBgTmZjFf8u7JCmlurqNhP3GgBD/2k3GJBxWBKQ6G0ksJq5uf1YjDn3Fi/5LUef2g/eEYgVmcMlf+/OyZst8MDrCzNskHl3fWNMwaRuA/pzAM3SunKjZGX4rX2o8xnKIwb1fZp83kJfDrCA8aKkQqep4Ir1uDLcsQjH0Pl39LP8oPZNjRgMZoPrUPGlMPYveTfPm2T0CgbiTLeh/bHZfT/F9/5uHI34v7o92/XBAyhBjsVpnAYVNai37G0Y8k7CJ3M9IIYTmzBqsPborwUoH4iqIs="
+      script:
+        - set -e
+        - if [ -f "$CACHE_DIR/old-docker-tag.txt" ]; then OLD_DOCKER_TAG=$(cat $CACHE_DIR/old-docker-tag.txt); else OLD_DOCKER_TAG=$DOCKER_REPO_PROD; fi; echo "old docker tag = $OLD_DOCKER_TAG"
+        - _CACHE_FROM="--cache-from $OLD_DOCKER_TAG"; docker pull $OLD_DOCKER_TAG || _CACHE_FROM=""
+        - git describe --tags --always | tee VERSION
+        - docker build -t local/build-container:build $_CACHE_FROM .
+        - travis/deploy-docker.sh
+      before_cache:
+        - travis/list-docker-tags.sh | tail -1 | tee $CACHE_DIR/old-docker-tag.txt
+
+    - language: python
+      stage: test
+      env:
+        - TRAVIS_JOB=test_py36_in_docker
+        - PYTEST_ADDOPTS="-rsxX -n 2 --durations=25 --fixture-durations=10 --junit-xml=pytest.xml --cov-report= --cov interhost --cov intrahost --cov ncbi"
+      install:
+        - DOCKER_TAG=`travis/list-docker-tags.sh | tail -1`
+        - echo "pulling $DOCKER_TAG"
+        - docker pull $DOCKER_TAG
+        - mkdir coverage
+      script:
+        - docker run -e _JAVA_OPTIONS -e PYTEST_ADDOPTS -v `pwd`/test:/opt/viral-ngs/source/test -v `pwd`/coverage:/coverage --entrypoint /bin/bash $DOCKER_TAG -c 'set -e; cd /opt/viral-ngs/source; pytest test/unit test/integration; cp .coverage /coverage'
+      after_success:
+        - mv coverage/.coverage .
+        - pip install coveralls==1.1
+        - coveralls
+    
+  
