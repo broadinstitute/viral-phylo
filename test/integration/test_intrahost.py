@@ -13,9 +13,8 @@ import unittest
 # module-specific
 import intrahost
 import interhost
-import tools.mafft
 import util.file
-import util.vcf
+import phylo.vcf
 import test
 from test import TestCaseWithTmp
 import tools
@@ -121,8 +120,8 @@ class TestSnpEff(TestCaseWithTmp):
         args = [ref_fasta, merged_vcf, "--isnvs", isnv_calls, "--alignments", msa_fasta, "--strip_chr_version", "--parse_accession"]
         args = intrahost.parser_merge_to_vcf(argparse.ArgumentParser()).parse_args(args)
         args.func_main(args)
-        vcf = util.vcf.VcfReader(merged_vcf)
-        expected_vcf = util.vcf.VcfReader(expected_merged_vcf)
+        vcf = phylo.vcf.VcfReader(merged_vcf)
+        expected_vcf = phylo.vcf.VcfReader(expected_merged_vcf)
         rows = list(vcf.get())
         expected_rows = list(expected_vcf.get())
         #self.assertEqual(rows, expected_rows)
@@ -133,8 +132,8 @@ class TestSnpEff(TestCaseWithTmp):
         args = [merged_vcf, "JQ685920", eff_vcf, "--emailAddress=test@example.com"]
         args = interhost.parser_snpEff(argparse.ArgumentParser()).parse_args(args)
         args.func_main(args)
-        vcf = util.vcf.VcfReader(eff_vcf)
-        expected_vcf = util.vcf.VcfReader(expected_eff_vcf)
+        vcf = phylo.vcf.VcfReader(eff_vcf)
+        expected_vcf = phylo.vcf.VcfReader(expected_eff_vcf)
         rows = list(vcf.get())
         expected_rows = list(expected_vcf.get())
         #self.assertEqual(rows, expected_rows)
