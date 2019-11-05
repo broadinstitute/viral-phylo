@@ -10,7 +10,7 @@ env:
   - MINICONDA_DIR="$HOME/miniconda"
   - GATK_PATH="$CACHE_DIR"
   - PYTHONIOENCODING=UTF8
-  
+
   - DOCKER_REGISTRY="quay.io"
   - DOCKER_REPO_PROD="quay.io/broadinstitute/viral-phylo"
   - DOCKER_REPO_DEV="quay.io/broadinstitute/viral-phylo"
