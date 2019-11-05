@@ -54,7 +54,8 @@ jobs:
       stage: test
       env:
         - TRAVIS_JOB=test_py36_in_docker
-        - PYTEST_ADDOPTS="-rsxX -n 1 --durations=25 --fixture-durations=10 --junit-xml=pytest.xml --cov-report= --cov interhost --cov intrahost --cov ncbi"
+        #- PYTEST_ADDOPTS="-rsxX -n 2 --durations=25 --fixture-durations=10 --junit-xml=pytest.xml --cov-report= --cov interhost --cov intrahost --cov ncbi"
+        - PYTEST_ADDOPTS="-rsxX"
       install:
         - DOCKER_TAG=`travis/list-docker-tags.sh | tail -1`
         - echo "pulling $DOCKER_TAG"
