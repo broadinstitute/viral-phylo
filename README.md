@@ -7,7 +7,7 @@
 -->
 
 viral-phylo
-=========
+===========
 
 A set of scripts and tools for the analysis of viral genomes: phylogenetics, annotation, intrahost variants, etc.
 
