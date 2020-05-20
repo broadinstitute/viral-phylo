@@ -26,6 +26,7 @@ class Tbl2AsnTool(tools.Tool):
     def __init__(self, install_methods=None):
         if install_methods is None:
             install_methods = []
+            install_methods.append(tools.PrexistingUnixCommand('/opt/miniconda/envs/viral-ngs-env/bin/tbl2asn', verifycmd='tbl2asn --help'))
             install_methods.append(tools.CondaPackage(TOOL_NAME, version=TOOL_VERSION))
             install_methods.append(DownloadGzipBinary(TOOL_URL.format(os=get_bintype()), 'tbl2asn'))
         tools.Tool.__init__(self, install_methods=install_methods)
