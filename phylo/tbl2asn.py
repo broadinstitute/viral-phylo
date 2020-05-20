@@ -15,7 +15,7 @@ import subprocess
 import gzip
 
 TOOL_NAME = "tbl2asn"
-TOOL_VERSION = "25.6" # quirk: versions error-out one year after their compilation date
+TOOL_VERSION = "25.7.1f" # we are curently using bioconda "tbl2asn-forever", which uses libfaketime to set the date to Jan 1, 2019
 TOOL_URL = 'ftp://ftp.ncbi.nih.gov/toolbox/ncbi_tools/converters/by_program/tbl2asn/{os}.tbl2asn.gz'
 
 log = logging.getLogger(__name__)
