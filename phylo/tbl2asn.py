@@ -17,7 +17,6 @@ import gzip
 
 TOOL_NAME = "tbl2asn"
 TOOL_VERSION = "25.7.1f" # we are curently using bioconda "tbl2asn-forever", which uses libfaketime to set the date to Jan 1, 2019
-TOOL_URL = 'ftp://ftp.ncbi.nih.gov/toolbox/ncbi_tools/converters/by_program/tbl2asn/{os}.tbl2asn.gz'
 
 log = logging.getLogger(__name__)
 
@@ -26,9 +25,7 @@ class Tbl2AsnTool(tools.Tool):
 
     def __init__(self, install_methods=None):
         if install_methods is None:
-            install_methods = []
-            install_methods.append(tools.PrexistingUnixCommand(shutil.which(TOOL_NAME), verifycmd='tbl2asn --help'))
-            install_methods.append(DownloadGzipBinary(TOOL_URL.format(os=get_bintype()), 'tbl2asn'))
+            install_methods = [tools.PrexistingUnixCommand(shutil.which(TOOL_NAME), verifycmd='tbl2asn --help')]
         tools.Tool.__init__(self, install_methods=install_methods)
 
     def version(self):
@@ -88,28 +85,3 @@ class Tbl2AsnTool(tools.Tool):
                 sys.stdout.flush()
                 raise e
 
-    # pylint: enable=W0221
-
-
-def get_bintype():
-    uname = os.uname()
-    if uname[0] == 'Darwin':
-        return 'mac'
-    elif uname[0] == 'Linux':
-        if uname[4] == 'x86_64':
-            return 'linux64'
-        else:
-            return 'linux'
-    else:
-        raise Exception('unsupported OS')
-
-
-class DownloadGzipBinary(tools.DownloadPackage):
-
-    def unpack(self, download_dir):
-        util.file.mkdir_p(self.destination_dir)
-        if (self.download_file.endswith('.gz') and not self.download_file.endswith('.tar.gz')):
-            with gzip.open(os.path.join(download_dir, self.download_file)) as inf:
-                with open(self.targetpath, 'wb') as outf:
-                    outf.write(inf.read())
-            os.chmod(self.targetpath, 0o755)
