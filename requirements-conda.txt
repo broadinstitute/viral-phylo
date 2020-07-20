@@ -1,3 +1,4 @@
+bcftools=1.10.2
 mafft>=7.467
 mummer4>=4.0.0beta2
 muscle>=3.8.1551
