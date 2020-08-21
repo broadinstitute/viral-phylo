@@ -454,7 +454,8 @@ def merge_to_vcf(
         alignments,
         strip_chr_version=False,
         naive_filter=False,
-        parse_accession=False):
+        parse_accession=False,
+        output_all_positions=False):
     ''' Combine and convert vPhaser2 parsed filtered output text files into VCF format.
         Assumption: consensus assemblies used in creating alignments do not extend beyond ends of reference.
                     the number of alignment files equals the number of chromosomes / segments
@@ -495,14 +496,20 @@ def merge_to_vcf(
         for sample in samples:
             sample_found=False
             for isnvs_file in isnvs:
+                # check for the guessed sample name *within* the data of the isnv call file
                 for row in util.file.read_tabfile(isnvs_file):
                     if sample==sampleIDMatch(row[0]):
-                        samp_to_isnv[sample] = isnvs_file
                         sample_found=True
-                        matched_samples.append(sample)
-                        matched_isnv_files.append(isnvs_file)
                         break
+                # if the guessed sample name (from the fasta) is in the isnv filename
+                # this is helpful if we need to match a guessed sample name
+                # to a blank isnv call file
+                if sample in isnvs_file: 
+                    sample_found=True
                 if sample_found:
+                    samp_to_isnv[sample] = isnvs_file
+                    matched_samples.append(sample)
+                    matched_isnv_files.append(isnvs_file)
                     break
         samples = matched_samples
         isnvs = matched_isnv_files
@@ -511,6 +518,7 @@ def merge_to_vcf(
 
     log.info(samp_to_isnv)
 
+    ref_chrlens = []
     # get IDs and sequence lengths for reference sequence
     with util.file.open_or_gzopen(refFasta, 'r') as inf:
         ref_chrlens = list((seq.id, len(seq)) for seq in Bio.SeqIO.parse(inf, 'fasta'))
@@ -591,11 +599,11 @@ def merge_to_vcf(
                 # to the assemblies
 
                 # if we had to guess samples only check that the number of isnv files == number of alignments
-                if len(guessed_samples)==0:
+                if len(guessed_samples)>0:
                     if not (number_of_aligned_sequences - 1) == num_isnv_files == len(samples):
                         raise LookupError(
-                            """The number of isnv files provided (%s) and must equal the number of sequences
-                            seen in the alignment (%s) (plus an extra reference record in the alignment), 
+                            """The number of isnv files provided (%s) must equal the number of sequences
+                            seen in the alignment (%s) (minus one to account for the reference record in the alignment), 
                             as well as the number of sample names provided (%s)
                             %s does not have the right number of sequences""" % (num_isnv_files,number_of_aligned_sequences - 1,len(samples),fileName))
 
@@ -692,6 +700,21 @@ def merge_to_vcf(
                             if row['POS'] == None or row['END'] == None:
                                 raise Exception('consensus extends beyond start or end of reference.')
                             data.append(row)
+
+                # optionally fill in missing positions (add argparse boolean toggle)
+                if output_all_positions:
+                    # sort all iSNVs (across all samples) and group by position
+                    data_observed = sorted(data, key=(lambda row: row['POS']))
+                    data_observed = itertools.groupby(data_observed, lambda row: row['POS'])
+
+                    refseq_len = len(ref_sequence)
+                    positions_with_isnvs = set([pos for pos,rows in data_observed])
+                    positions_without_isnvs = set(range(1,len(ref_sequence)+1)) - positions_with_isnvs
+
+                    # fill in positions without iSNVs with POS values 
+                    # so consensus values are included for samples at these positions
+                    dummy_positions = [{"POS":p, "END":p, "allele_counts":{}, "s_pos":None, "sample":None} for p in positions_without_isnvs]
+                    data.extend(dummy_positions)
 
                 # sort all iSNVs (across all samples) and group by position
                 data = sorted(data, key=(lambda row: row['POS']))
@@ -851,9 +874,11 @@ def merge_to_vcf(
                     if not alleles:
                         raise Exception()
                     elif len(alleles) == 1:
-                        # if we filtered any alleles above, skip this position if there is no variation left here
-                        log.info("dropped position %s:%s due to lack of variation", ref_sequence.id, pos)
-                        continue
+                        if not output_all_positions:
+                            # if we filtered any alleles above, skip this position if there is no variation left here
+                            log.info("dropped position %s:%s due to lack of variation", ref_sequence.id, pos)
+                            continue
+
                     alleleMap = dict((a, i) for i, a in enumerate(alleles))
                     # GT col emitted below
                     genos = [str(alleleMap.get(consAlleles.get(s), '.')) for s in samplesToUse]
@@ -875,7 +900,8 @@ def merge_to_vcf(
                         c = phylo.genbank.parse_accession_str(c)
                     if strip_chr_version:
                         c = strip_accession_version(c)
-                    out = [c, pos, '.', alleles[0], ','.join(alleles[1:]), '.', '.', '.', 'GT:AF:DP:NL:LB']
+                    # see the VCF spec: https://samtools.github.io/hts-specs/VCFv4.1.pdf
+                    out = [c, pos, '.', alleles[0], ','.join(alleles[1:]) if len(alleles)>1 else '.', '.', '.', '.', 'GT:AF:DP:NL:LB']
                     out = out + list(map(':'.join, zip(genos, freqs, depths, nlibs, pvals)))
                     outf.write('\t'.join(map(str, out)) + '\n')
     # compress output if requested
@@ -903,6 +929,14 @@ def parser_merge_to_vcf(parser=argparse.ArgumentParser()):
             assemblies, with one file per chromosome/segment. Each alignment
             file will contain a line for each sample, as well as the
             reference genome to which they were aligned.""")
+    parser.add_argument("--output_all_positions",
+                        default=False,
+                        action="store_true",
+                        dest="output_all_positions",
+                        help="""If set, the output VCF will include all positions included in the reference, 
+                                including both sites with intrahost variants and sites with consensus calls
+                                but no sub-consensus variation. Per-sample consensus calls (relative to the reference)
+                                will be included. """)
     parser.add_argument("--strip_chr_version",
                         default=False,
                         action="store_true",
