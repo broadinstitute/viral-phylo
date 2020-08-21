@@ -487,7 +487,7 @@ class TestVcfMerge(test.TestCaseWithTmp):
         self.assertEqual(rows[3].ref, 'G')
         self.assertEqual(rows[3].alt, 'C')
         self.assertEqual(':'.join(rows[3][0].split(':')[:2]), '1:1.0')
-        self.assertEqual(':'.join(rows[3][1].split(':')[:2]), '0:.')
+        self.assertEqual(':'.join(rows[3][1].split(':')[:2]), '0:0.0')
 
     def test_simple_insertions(self):
         # IA, ITCG, etc
