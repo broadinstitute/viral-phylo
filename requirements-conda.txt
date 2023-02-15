@@ -1,6 +1,6 @@
-mafft=7.471
+mafft=7.508
 mummer4>=4.0.0rc1
-muscle>=3.8.1551
+muscle=3.8.1551
 snpeff=4.3.1t
 tbl2asn-forever>=25.7.1f
 vphaser2=2.0
