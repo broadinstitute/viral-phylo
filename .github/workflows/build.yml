@@ -191,16 +191,20 @@ jobs:
           pwd
           echo "=========== ls -lah ============"
           ls -lah
+          echo "=========== ls -lah ../ ============"
+          ls -lah ../
           echo "=========== env ============"
           env
           echo "=========== free ============"
-          free
+          free -h
           echo "=========== df -h ============"
           df -h
           echo "=========== cat /proc/cpuinfo ============"
           cat /proc/cpuinfo
-          echo "=========== docker -version ============"
-          docker -version
+          echo "=========== docker --version ============"
+          docker --version
+          echo "=========== docker images ============"
+          docker images
           echo ""
           docker run -e _JAVA_OPTIONS -e PYTEST_ADDOPTS -v `pwd`/coverage:/coverage -v `pwd`/test:/opt/viral-ngs/source/test --entrypoint /bin/bash $DOCKER_TAG -c 'set -e; cd /opt/viral-ngs/source; pytest test/unit; cp .coverage /coverage'
       - name: run coveralls
