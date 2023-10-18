@@ -131,8 +131,9 @@ def vphaser_one_sample(inBam, inConsFasta, outTab, vphaserNumThreads=None,
 
         bam_to_process = util.file.mkstempfname('.mapped-withdoublymappedremoved.bam')
         samtoolsTool.removeDoublyMappedReads(leading_or_trailing_indels_removed, bam_to_process)
-        samtoolsTool.index(bam_to_process)
         os.unlink(leading_or_trailing_indels_removed)
+
+    samtoolsTool.index(bam_to_process)
 
     # For low-quality data, the process of removing doubly-mapped reads
     # can remove all reads. In such cases, stub out an empty vphaser output
