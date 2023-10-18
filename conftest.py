@@ -139,6 +139,7 @@ def monkeypatch_function_result(monkeypatch):
     return _set_function_result
 
 
+
 class FixtureReporter:
 
     def __init__(self, config):
