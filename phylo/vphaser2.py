@@ -37,7 +37,6 @@ class Vphaser2Tool(tools.Tool):
         # Also has the effect of suppressing informational messages from vphaser,
         #    which is probably a good thing.
         try:
-            # TODO: should this be cmd_str?
             subprocess.check_output(cmd, env=envCopy, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as ex:
             print(ex.output)    # Useful in case of no log handler.
