@@ -208,7 +208,7 @@ jobs:
           echo "=========== docker images ============"
           docker images
           echo ""
-          docker run -e _JAVA_OPTIONS -e PYTEST_ADDOPTS -e PYTEST_XDIST_WORKER_COUNT=1 OMP_NUM_THREADS=1 -v `pwd`/coverage:/coverage -v `pwd`/test:/opt/viral-ngs/source/test --entrypoint /bin/bash $DOCKER_TAG -c 'set -e; cd /opt/viral-ngs/source; md5sum -b test/input/TestPerSample/in.bam; pytest test/unit; cp .coverage /coverage'
+          docker run -e _JAVA_OPTIONS -e PYTEST_ADDOPTS -e PYTEST_XDIST_WORKER_COUNT=1 -e OMP_NUM_THREADS=1 -v `pwd`/coverage:/coverage -v `pwd`/test:/opt/viral-ngs/source/test --entrypoint /bin/bash $DOCKER_TAG -c 'set -e; cd /opt/viral-ngs/source; md5sum -b test/input/TestPerSample/in.bam; pytest test/unit; cp .coverage /coverage'
       - name: run coveralls
         run: |
           mv coverage/.coverage .
