@@ -24,6 +24,10 @@ class Vphaser2Tool(tools.Tool):
         super(Vphaser2Tool, self).__init__(install_methods=install_methods)
 
     def execute(self, inBam, outDir, numThreads=None):    # pylint: disable=W0221
+        # index inBam
+        samtoolsTool = tools.samtools.SamtoolsTool()
+        samtoolsTool.index(inBam)
+
         cmd = [self.install_and_get_path(), '-i', inBam, '-o', outDir]
         cmd_str = ' '.join(cmd)
         envCopy = os.environ.copy()
