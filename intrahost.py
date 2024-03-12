@@ -574,7 +574,7 @@ def merge_to_vcf(
                         for seq in Bio.SeqIO.parse(inf2, 'fasta'):
                             if refSeq.id == seq.id:
                                 ref_seq_id_to_alignment_file[seq.id] = alignmentFile
-                                ref_seq_in_alignment_file[seq.id] = seq.seq.ungap('-')
+                                ref_seq_in_alignment_file[seq.id] = seq.seq.replace("-","")
 
         if len(ref_seq_id_to_alignment_file) < len(ref_chrlens):
             raise LookupError("Not all reference sequences found in alignments.")
@@ -627,7 +627,7 @@ def merge_to_vcf(
                     for seq in Bio.SeqIO.parse(alignFileIn, 'fasta'):
                         for sampleName in samplesToUse:
                             if seq.id == sampleName:
-                                samp_to_seqIndex[sampleName] = seq.seq.ungap('-')
+                                samp_to_seqIndex[sampleName] = seq.seq.replace("-","")
                                 break
 
                 if not len(samp_to_seqIndex) == len(samplesToUse):
@@ -739,7 +739,7 @@ def merge_to_vcf(
                                      "for %s at %s:%s-%s.", s, ref_sequence.id, pos, end)
                             continue
 
-                        cons = samp_to_seqIndex[s]  # .seq.ungap('-')#[ cm.mapChr(ref_sequence.id, s) ]
+                        cons = samp_to_seqIndex[s]  # .seq.replace("-","")#[ cm.mapChr(ref_sequence.id, s) ]
 
                         allele = str(cons[cons_start - 1:cons_stop]).upper()
                         if s in samp_offsets:
