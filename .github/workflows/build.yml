@@ -139,7 +139,7 @@ jobs:
     needs: build_docker
     runs-on: ubuntu-20.04
     env:
-      GITHUB_ACTIONS_PYTHON_VERSION: 3.10
+      GITHUB_ACTIONS_PYTHON_VERSION: "3.10"
       PYTEST_ADDOPTS: "-rsxX -n 1 --durations=25 --fixture-durations=10 --junit-xml=pytest.xml --cov-report= --cov interhost --cov intrahost --cov ncbi --cov phylo"
     steps:
       - name: checkout repository
