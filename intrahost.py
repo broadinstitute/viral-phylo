@@ -306,7 +306,7 @@ def get_mpileup_allele_counts(inBam, chrom, pos, inConsFasta, samtools=None):
     samtools = samtools or tools.samtools.SamtoolsTool()
     pileupFileName = util.file.mkstempfname('.txt')
     samtools.mpileup(inBam, pileupFileName, ['-A', '-r', '%s:%d-%d' % (chrom, pos, pos), '-B', '-d', '50000',
-                                                   '-L', '50000', '-Q', '0', '-f', inConsFasta])
+                                                '-Q', '0', '-f', inConsFasta])
     with open(pileupFileName) as pileupFile:
         words = pileupFile.readline().split('\t')
     if len(words) < 5:
