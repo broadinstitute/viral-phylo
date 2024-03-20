@@ -45,8 +45,7 @@ class Vphaser2Tool(tools.Tool):
         try:
             subprocess.check_output(cmd, env=envCopy, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as ex:
-            if len(logging.handlers)==0:
-                print(ex.output if type(ex.output)==str else ex.output.decode('utf-8'))    # Useful in case of no log handler.
+            #print(ex.output if type(ex.output)==str else ex.output.decode('utf-8'))    # Useful in case of no log handler.
             log.error(ex.output if type(ex.output)==str else ex.output.decode('utf-8'))
             raise
 
