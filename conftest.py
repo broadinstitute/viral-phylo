@@ -56,7 +56,7 @@ def pytest_collection_modifyitems(config, items):
 # Fixtures for creating a temp dir at session/module/class/function scope.
 # Unlike pytest's tmpdir fixture, they use tempfile.mkdtemp to create a
 # tempdir in the most secure/race-condition-free manner possible.
-# Also, since util.file.tmp_dir() is used, the tempdir contens can be
+# Also, since util.file.tmp_dir() is used, the tempdir contents can be
 # preserved for debugging by setting the environment variable VIRAL_NGS_TMP_DIRKEEP.
 
 

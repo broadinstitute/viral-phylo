@@ -56,7 +56,8 @@ class Vphaser2Tool(tools.Tool):
          [CHROM, Ref_Pos, Var, Cons, Strd_bias_pval, Type, Var_perc,
           SNP_or_LP_Profile1, SNP_or_LP_Profile2, ...]
         """
-        outdir = tempfile.mkdtemp('vphaser2')
+        #outdir = tempfile.mkdtemp('vphaser2')
+        outdir = util.file.tmp_dir(prefix='vphaser2')
         try:
             self.execute(inBam, outdir, numThreads)
         finally:
