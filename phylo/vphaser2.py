@@ -28,7 +28,7 @@ class Vphaser2Tool(tools.Tool):
         samtoolsTool = tools.samtools.SamtoolsTool()
         samtoolsTool.index(inBam)
 
-        log.info("V-Phaser2 output directory: '%s'", outDir)
+        log.debug("V-Phaser2 output directory: '%s'", outDir)
 
         cmd = [self.install_and_get_path(), '-i', inBam, '-o', outDir]
         cmd_str = ' '.join(cmd)
