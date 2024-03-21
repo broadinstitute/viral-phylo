@@ -305,6 +305,19 @@ def get_mpileup_allele_counts(inBam, chrom, pos, inConsFasta, samtools=None):
     """
     samtools = samtools or tools.samtools.SamtoolsTool()
     pileupFileName = util.file.mkstempfname('.txt')
+
+    # bcftools params
+    # https://samtools.github.io/bcftools/bcftools.html#mpileup
+    # -A, --count-orphans Do not skip anomalous read pairs in variant calling.
+    # -r, --regions Only generate mpileup output in given regions. Requires the alignment files to be indexed. 
+    # -B, --no-BAQ Disable probabilistic realignment for the computation of base alignment quality (BAQ).
+    # -d, --max-depth At a position, read maximally INT reads per input file. 
+    # -L, --max-idepth Skip INDEL calling if the average per-sample depth is above INT 
+    # -Q, --min-BQ Minimum base quality for a base to be considered
+    # -f, --fasta-ref The faidx-indexed reference file in the FASTA format. The file can be optionally compressed by bgzip.
+    # bcftools.mpileup(inBam, pileupFileName, ['-A', '-r', '%s:%d-%d' % (chrom, pos, pos), '-B', '-d', '50000',
+    #                                               '-L', '50000', '-Q', '0', '-O', 'v', '-f', inConsFasta])
+
     samtools.mpileup(inBam, pileupFileName, ['-A', '-r', '%s:%d-%d' % (chrom, pos, pos), '-B', '-d', '50000',
                                                 '-Q', '0', '-f', inConsFasta])
     with open(pileupFileName) as pileupFile:
