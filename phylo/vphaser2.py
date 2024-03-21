@@ -39,13 +39,12 @@ class Vphaser2Tool(tools.Tool):
         log.debug(cmd_str)
 
         # Use check_output instead of check_call so that we get error information
-        #    if the executable can't run on travis.
+        #    if the executable can't run on GitHub Actions.
         # Also has the effect of suppressing informational messages from vphaser,
         #    which is probably a good thing.
         try:
             subprocess.check_output(cmd, env=envCopy, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as ex:
-            #print(ex.output if type(ex.output)==str else ex.output.decode('utf-8'))    # Useful in case of no log handler.
             log.error(ex.output if type(ex.output)==str else ex.output.decode('utf-8'))
             raise
 
@@ -75,4 +74,3 @@ class Vphaser2Tool(tools.Tool):
                     for line in inf:
                         if not line.startswith('#'):
                             yield [chromName] + line.strip().split()
-            #shutil.rmtree(outdir)
