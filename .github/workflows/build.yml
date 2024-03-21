@@ -140,7 +140,7 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       GITHUB_ACTIONS_PYTHON_VERSION: "3.10"
-      PYTEST_ADDOPTS: "-rsxX -n $(nproc) --durations=25 --fixture-durations=10 --junit-xml=pytest.xml --cov-report= --cov interhost --cov intrahost --cov ncbi --cov phylo"
+      PYTEST_ADDOPTS: "-rsxX --durations=25 --fixture-durations=10 --junit-xml=pytest.xml --cov-report= --cov interhost --cov intrahost --cov ncbi --cov phylo"
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
@@ -190,7 +190,7 @@ jobs:
           mkdir coverage
       - name: test with docker
         run: |
-          docker run -e _JAVA_OPTIONS -e PYTEST_ADDOPTS -v `pwd`/coverage:/coverage -v `pwd`/test:/opt/viral-ngs/source/test:rw --entrypoint /bin/bash $DOCKER_TAG -c 'set -e; cd /opt/viral-ngs/source; env; echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"; export LD_LIBRARY_PATH="/opt/miniconda/envs/viral-ngs-env/lib:/usr/local/lib:${LD_LIBRARY_PATH}"; echo "nproc: $(nproc)"; python -c "import locale; print(locale.getpreferredencoding(False))"; pytest test/unit; cp .coverage /coverage'
+          docker run -e _JAVA_OPTIONS -e PYTEST_ADDOPTS -v `pwd`/coverage:/coverage -v `pwd`/test:/opt/viral-ngs/source/test:rw --entrypoint /bin/bash $DOCKER_TAG -c 'set -e; cd /opt/viral-ngs/source; env; echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"; export LD_LIBRARY_PATH="/opt/miniconda/envs/viral-ngs-env/lib:/usr/local/lib:${LD_LIBRARY_PATH}"; echo "nproc: $(nproc)"; python -c "import locale; print(locale.getpreferredencoding(False))"; pytest -n $(nproc) test/unit; cp .coverage /coverage'
       - name: Run coveralls
         uses: coverallsapp/github-action@v2
       #- name: run coveralls
