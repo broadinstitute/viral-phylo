@@ -6,13 +6,12 @@ omit = tools/conda-tools/*
 disable_warnings =
     module-not-imported
 relative_files = True
-#data_file = '.coverage'
 
-[paths]
-source =
-    /
-    /opt/viral-ngs/**/
-    opt/viral-ngs/**/
+#[paths]
+#source =
+#    /
+#    /opt/viral-ngs/**/
+#    opt/viral-ngs/**/
 
 [report]
 exclude_lines =
