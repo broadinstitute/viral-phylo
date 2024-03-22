@@ -10,7 +10,7 @@ relative_files = True
 
 [paths]
 source =
-    ./
+    /
     /opt/viral-ngs/**/
     opt/viral-ngs/**/
 
