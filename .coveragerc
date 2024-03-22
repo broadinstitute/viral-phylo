@@ -8,10 +8,10 @@ disable_warnings =
 relative_files = True
 #data_file = '.coverage'
 
-[paths]
-source =
-    viral-phylo/
-    /opt/viral-ngs/viral-phylo
+# [paths]
+# source =
+#     viral-phylo/
+#     /opt/viral-ngs/viral-phylo
 
 [report]
 exclude_lines =

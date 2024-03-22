@@ -46,8 +46,6 @@ def pytest_configure(config):
         "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
     )
 
-
-
 def pytest_collection_modifyitems(config, items):
     if config.getoption("--runslow"):
         # --runslow given in cli: do not skip slow tests
