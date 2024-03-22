@@ -11,8 +11,8 @@ relative_files = True
 [paths]
 source =
     ./
-    /opt/viral-ngs/viral-*/**
-    opt/viral-ngs/viral-*/**
+    /opt/viral-ngs/**/
+    opt/viral-ngs/**/
 
 [report]
 exclude_lines =
