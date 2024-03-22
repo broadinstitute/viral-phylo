@@ -7,11 +7,11 @@ disable_warnings =
     module-not-imported
 relative_files = True
 
-#[paths]
-#source =
-#    /
-#    /opt/viral-ngs/**/
-#    opt/viral-ngs/**/
+[paths]
+source =
+    /
+    /opt/viral-ngs/viral-*/*.py
+    opt/viral-ngs/viral-*/*.py
 
 [report]
 exclude_lines =

@@ -186,4 +186,4 @@ class FixtureReporter:
         widths = [max(map(len, col)) for col in zip(*rows)]
         for row in rows:
             writer.write(" ".join((val.ljust(width) for val, width in zip(row, widths))))
-            writer.line()
+            writer.line(msg="")
