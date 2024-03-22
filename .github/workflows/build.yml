@@ -190,7 +190,7 @@ jobs:
           mkdir coverage
       - name: test with docker
         run: |
-          docker run -e _JAVA_OPTIONS -e PYTEST_ADDOPTS -v `pwd`/.coveragerc:/opt/viral-ngs/viral-phylo/.coveragerc -v `pwd`/coverage:/coverage -v `pwd`/test:/opt/viral-ngs/source/test:rw --entrypoint /bin/bash $DOCKER_TAG -c 'set -e; cd /opt/viral-ngs/source; env; echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"; export LD_LIBRARY_PATH="/opt/miniconda/envs/viral-ngs-env/lib:/usr/local/lib:${LD_LIBRARY_PATH}"; echo "nproc: $(nproc)"; python -c "import locale; print(locale.getpreferredencoding(False))"; cat .coveragerc; pytest -n $(nproc) test/unit; cp .coverage /coverage'
+          docker run -e _JAVA_OPTIONS -e PYTEST_ADDOPTS -v `pwd`/.coveragerc:/opt/viral-ngs/source/.coveragerc -v `pwd`/coverage:/coverage -v `pwd`/test:/opt/viral-ngs/source/test:rw --entrypoint /bin/bash $DOCKER_TAG -c 'set -e; cd /opt/viral-ngs/source; env; echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"; export LD_LIBRARY_PATH="/opt/miniconda/envs/viral-ngs-env/lib:/usr/local/lib:${LD_LIBRARY_PATH}"; echo "nproc: $(nproc)"; python -c "import locale; print(locale.getpreferredencoding(False))"; cat .coveragerc; pytest -n $(nproc) test/unit; cp .coverage /coverage'
       - name: Run coveralls
         uses: coverallsapp/github-action@v2
         with:
