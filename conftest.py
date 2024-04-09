@@ -42,6 +42,9 @@ def pytest_configure(config):
     reporter = FixtureReporter(config)
     config.pluginmanager.register(reporter, 'fixturereporter')
 
+    config.addinivalue_line(
+        "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
+    )
 
 def pytest_collection_modifyitems(config, items):
     if config.getoption("--runslow"):
@@ -56,7 +59,7 @@ def pytest_collection_modifyitems(config, items):
 # Fixtures for creating a temp dir at session/module/class/function scope.
 # Unlike pytest's tmpdir fixture, they use tempfile.mkdtemp to create a
 # tempdir in the most secure/race-condition-free manner possible.
-# Also, since util.file.tmp_dir() is used, the tempdir contens can be
+# Also, since util.file.tmp_dir() is used, the tempdir contents can be
 # preserved for debugging by setting the environment variable VIRAL_NGS_TMP_DIRKEEP.
 
 
@@ -139,6 +142,7 @@ def monkeypatch_function_result(monkeypatch):
     return _set_function_result
 
 
+
 class FixtureReporter:
 
     def __init__(self, config):
@@ -164,13 +168,13 @@ class FixtureReporter:
         if self.durations is None:
             return
 
-        writer = terminalreporter.writer
+        writer = terminalreporter
 
         slowest = sorted(self.stats.items(), key=operator.itemgetter(1), reverse=True)
         if not self.durations:
-            writer.sep("=", "slowest fixture durations")
+            writer.write_sep("=", "slowest fixture durations")
         else:
-            writer.sep("=", "slowest %s fixture durations" % self.durations)
+            writer.write_sep("=", "slowest %s fixture durations" % self.durations)
             slowest = slowest[:self.durations]
 
 
@@ -182,4 +186,4 @@ class FixtureReporter:
         widths = [max(map(len, col)) for col in zip(*rows)]
         for row in rows:
             writer.write(" ".join((val.ljust(width) for val, width in zip(row, widths))))
-            writer.line()
+            writer.line(msg="")

@@ -1,10 +1,7 @@
 [![Docker Repository on Quay](https://quay.io/repository/broadinstitute/viral-phylo/status "Docker Repository on Quay")](https://quay.io/repository/broadinstitute/viral-phylo)
-[![Build Status](https://travis-ci.com/broadinstitute/viral-phylo.svg?branch=master)](https://travis-ci.com/broadinstitute/viral-phylo)
+[![Build Status](https://github.com/broadinstitute/viral-phylo/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/broadinstitute/viral-phylo/actions)
 [![Documentation Status](https://readthedocs.org/projects/viral-phylo/badge/?version=latest)](https://viral-phylo.readthedocs.io/en/latest/?badge=latest)
-<!--
-[![Coverage Status](https://coveralls.io/repos/broadinstitute/viral-phylo/badge.png)](https://coveralls.io/r/broadinstitute/viral-phylo)
-[![Code Health](https://landscape.io/github/broadinstitute/viral-phylo/master/landscape.svg?style=flat)](https://landscape.io/github/broadinstitute/viral-phylo)
--->
+[![Coverage Status](https://coveralls.io/repos/github/broadinstitute/viral-phylo/badge.svg?branch=master)](https://coveralls.io/github/broadinstitute/viral-phylo?branch=master)
 
 viral-phylo
 ===========

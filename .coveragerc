@@ -5,9 +5,15 @@ branch = True
 omit = tools/conda-tools/*
 disable_warnings =
     module-not-imported
+relative_files = True
+
+#[paths]
+#source =
+#    /
+#    /opt/viral-ngs/viral-*/*.py
+#    opt/viral-ngs/viral-*/*.py
 
 [report]
-
 exclude_lines =
     pragma: no cover
 
@@ -19,3 +25,5 @@ exclude_lines =
 
     if 0:
     if __name__ == .__main__.:
+
+#include_namespace_packages = true # pytest >=7.0
