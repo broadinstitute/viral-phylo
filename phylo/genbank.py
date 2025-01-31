@@ -64,6 +64,9 @@ def _fetch_from_nuccore(accessionList, destinationDir, emailAddress,
 
     maxChunkSize = 500
 
+    # de-duplicate accessions to avoid redundant downloads and filename collisions
+    accessionList = list(set(accessionList))
+
     # Conform to NCBI retreival guidelines by chunking into 500-accession chunks if
     # >500 accessions are specified and chunkSize is set to 1
     # Also clamp chunk size to 500 if the user specified a larger value.
