@@ -229,17 +229,17 @@ class VcfMergeRunner:
                 outf.write('\t'.join(map(str, row)) + '\n')
         return fn
 
-    def run_and_get_vcf_rows(self, retree=1, omit_samplenames=False):
+    def run_and_get_vcf_rows(self, retree=1, omit_samplenames=False, output_all_positions=False):
         outVcf = util.file.mkstempfname('.vcf.gz')
 
         self.multi_align_samples(retree=retree)
 
         if not omit_samplenames:
             intrahost.merge_to_vcf(self.ref, outVcf, self.sample_order, list(self.dump_isnv_tmp_file(s) for s in self.sample_order),
-                              self.alignedFastas)
+                              self.alignedFastas, output_all_positions=output_all_positions)
         else:
             intrahost.merge_to_vcf(self.ref, outVcf, [], list(self.dump_isnv_tmp_file(s) for s in self.sample_order),
-                              self.alignedFastas)
+                              self.alignedFastas, output_all_positions=output_all_positions)
 
 
         with phylo.vcf.VcfReader(outVcf) as vcf:
@@ -471,6 +471,24 @@ class TestVcfMerge(test.TestCaseWithTmp):
         self.assertEqual(':'.join(rows[0][0].split(':')[:2]), '0:0.1')
         self.assertEqual(':'.join(rows[0][1].split(':')[:2]), '1:1.0')
         self.assertEqual(rows[0][2], '.:.:.:.:.')
+
+    def test_output_all_positions(self):
+        # If full output is enabled, check that we output consensus values
+        # REF C
+        # S1  A (isnv)
+        # S2  A (consensus, no isnv)
+        merger = VcfMergeRunner([('ref1', 'ATCG')])
+        merger.add_genome('s1', [('s1-1', 'ATCC')])
+        merger.add_genome('s2', [('s2-1', 'ATAG')])
+        merger.add_snp('s1', 's1-1', 3, [('C', 90, 90), ('A', 10, 10)])
+        rows = merger.run_and_get_vcf_rows(output_all_positions=True)
+        self.assertEqual(len(rows), 4)
+        self.assertEqual(rows[3].contig, 'ref1')
+        self.assertEqual(rows[3].pos + 1, 4)
+        self.assertEqual(rows[3].ref, 'G')
+        self.assertEqual(rows[3].alt, 'C')
+        self.assertEqual(':'.join(rows[3][0].split(':')[:2]), '1:1.0')
+        self.assertEqual(':'.join(rows[3][1].split(':')[:2]), '0:0.0')
 
     def test_simple_insertions(self):
         # IA, ITCG, etc
