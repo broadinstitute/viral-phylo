@@ -35,6 +35,13 @@ elif [[ "$GITHUB_ACTIONS_BRANCH" == "master" ]]; then
 	DOCKER_SHORT_TAG="latest"
 	DOCKER_LONG_TAG="$(git describe --tags --always | perl -lape 's/^v?(\S+)-(\d+)-g\S+/$1-rc$2/')"
 	PUSH_TO_MIRROR=true
+elif [[ "$GITHUB_ACTIONS_BRANCH" == gh-readonly-queue/* ]]; then
+	# this is a merge queue build (branch name like gh-readonly-queue/master/pr-128-...)
+	# Docker tags cannot contain slashes, so extract PR number and create clean tag
+	DOCKER_REPO=$DOCKER_REPO_DEV
+	PR_NUM=$(echo "$GITHUB_ACTIONS_BRANCH" | sed -n 's|.*/pr-\([0-9]*\)-.*|\1|p')
+	DOCKER_SHORT_TAG="merge-queue-pr-$PR_NUM"
+	DOCKER_LONG_TAG="$(git describe --tags --always | sed s/^v//)-$DOCKER_SHORT_TAG"
 else
 	# this is an normal non-master branch commit
 	DOCKER_REPO=$DOCKER_REPO_DEV
