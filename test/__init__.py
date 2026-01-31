@@ -6,6 +6,9 @@ __author__ = "irwin@broadinstitute.org"
 import filecmp
 import os
 import re
+import shutil
+import subprocess
+import tempfile
 import unittest
 import hashlib
 import logging
@@ -32,6 +35,112 @@ else:
 def assert_equal_contents(testCase, filename1, filename2):
     'Assert contents of two files are equal for a unittest.TestCase'
     testCase.assertTrue(filecmp.cmp(filename1, filename2, shallow=False))
+
+
+def validate_feature_table_with_table2asn(tbl_path, fasta_path, work_dir=None):
+    """
+    Validate a feature table using NCBI's table2asn tool.
+
+    This function creates a temporary directory with matching .fsa and .tbl files,
+    runs table2asn validation, and checks for syntax errors in the feature table.
+
+    Args:
+        tbl_path: Path to the .tbl feature table file to validate
+        fasta_path: Path to the FASTA file (will be converted to .fsa format)
+        work_dir: Optional working directory to use (defaults to a new temp dir)
+
+    Returns:
+        dict with keys:
+            - 'valid': bool - True if no feature table syntax errors
+            - 'exit_code': int - table2asn exit code
+            - 'errors': list - parsed error messages related to feature syntax
+            - 'val_content': str - content of .val file if it exists
+    """
+    table2asn_path = shutil.which('table2asn')
+    if not table2asn_path:
+        raise FileNotFoundError("table2asn not found in PATH")
+
+    work_dir = work_dir or tempfile.mkdtemp()
+    base_name = os.path.splitext(os.path.basename(tbl_path))[0]
+
+    # Create .fsa file (FASTA without gaps, matching base name)
+    # table2asn requires matching prefixes for .fsa and .tbl files
+    fsa_path = os.path.join(work_dir, base_name + '.fsa')
+    with open(fasta_path, 'r') as inf:
+        for rec in Bio.SeqIO.parse(inf, 'fasta'):
+            # Write the sequence that matches the tbl file (typically the sample, not ref)
+            seq_no_gaps = str(rec.seq).replace('-', '')
+            # Use the base_name as the sequence ID to match the tbl header
+            with open(fsa_path, 'w') as outf:
+                outf.write('>{}\n{}\n'.format(base_name, seq_no_gaps))
+            break  # Only need first non-ref sequence
+
+    # Copy .tbl file with matching name (may already have correct name)
+    work_tbl = os.path.join(work_dir, base_name + '.tbl')
+    if os.path.abspath(tbl_path) != os.path.abspath(work_tbl):
+        shutil.copy(tbl_path, work_tbl)
+
+    # Run table2asn validation
+    result = subprocess.run(
+        [table2asn_path, '-i', fsa_path, '-V', 'vb'],
+        capture_output=True,
+        text=True,
+        cwd=work_dir
+    )
+
+    # Parse validation file if it exists
+    val_path = os.path.join(work_dir, base_name + '.val')
+    val_content = ''
+    if os.path.exists(val_path):
+        with open(val_path, 'r') as f:
+            val_content = f.read()
+
+    # Check for feature table SYNTAX errors only, not biological validity errors.
+    # We want to catch format issues like internal partials, bad intervals, etc.
+    # but NOT biological errors like wrong start codons, missing stop codons, etc.
+    # Issue #74 specifically produces "internal partials" and "Bad feature interval".
+    error_patterns = [
+        'Bad feature interval',             # Invalid coordinate format
+        'Feature bad start and/or stop',    # Invalid start/stop coordinates
+        'internal partials',                # Partial symbol on internal interval
+        'SEQ_FEAT.Range',                   # Coordinate range errors
+        'SEQ_FEAT.BadLocation',             # Bad location format
+    ]
+
+    all_output = result.stdout + '\n' + val_content
+    errors = []
+    for line in all_output.split('\n'):
+        if any(pattern in line for pattern in error_patterns):
+            stripped = line.strip()
+            if stripped and stripped not in errors:
+                errors.append(stripped)
+
+    return {
+        'valid': len(errors) == 0,
+        'exit_code': result.returncode,
+        'errors': errors,
+        'val_content': val_content
+    }
+
+
+def assert_valid_feature_table(testCase, tbl_path, fasta_path, work_dir=None):
+    """
+    Assert that a feature table passes table2asn validation.
+
+    Args:
+        testCase: unittest.TestCase instance for assertions
+        tbl_path: Path to the .tbl feature table file
+        fasta_path: Path to the FASTA file (sequences, may contain gaps)
+        work_dir: Optional working directory
+    """
+    result = validate_feature_table_with_table2asn(tbl_path, fasta_path, work_dir)
+    if not result['valid']:
+        error_msg = (
+            "Feature table validation failed:\n"
+            "  TBL: {}\n"
+            "  Errors: {}".format(tbl_path, result['errors'])
+        )
+        testCase.fail(error_msg)
 
 
 def assert_equal_bam_reads(testCase, bam_filename1, bam_filename2):
